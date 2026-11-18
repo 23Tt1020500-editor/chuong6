@@ -1,0 +1,29 @@
+{% extends 'admin/base_admin.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+<h4 class="mb-3">{{ 'Sửa sách: ' ~ book.title if book else 'Thêm sách' }}</h4>
+<form method="post" enctype="multipart/form-data" novalidate>
+  {{ form.hidden_tag() }}
+  <div class="row g-4">
+    <div class="col-md-8">
+      {{ m.field(form.title) }}
+      <div class="row"><div class="col">{{ m.field(form.author) }}</div><div class="col">{{ m.field(form.publisher) }}</div></div>
+      <div class="row">
+        <div class="col">{{ m.field(form.category_id, cls='form-select') }}</div>
+        <div class="col">{{ m.field(form.year) }}</div>
+      </div>
+      <div class="row"><div class="col">{{ m.field(form.price) }}</div><div class="col">{{ m.field(form.stock) }}</div></div>
+      {{ m.field(form.description, rows=4) }}
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Ảnh bìa</label>
+      {% if book %}{{ m.cover(book, 220) }}{% else %}<div class="rounded bg-secondary-subtle p-5 text-center text-muted">Chưa có ảnh</div>{% endif %}
+      <input class="form-control mt-2 {{ 'is-invalid' if form.cover.errors }}" type="file" name="cover" accept=".jpg,.jpeg,.png,.webp">
+      {% for e in form.cover.errors %}<div class="invalid-feedback d-block">{{ e }}</div>{% endfor %}
+      <small class="text-muted">JPG, PNG, WEBP, tối đa 2 MB. Không chọn: giữ ảnh cũ.</small>
+    </div>
+  </div>
+  <button class="btn btn-primary">Lưu</button>
+  <a class="btn btn-outline-secondary" href="{{ url_for('admin.books') }}">Huỷ</a>
+</form>
+{% endblock %}

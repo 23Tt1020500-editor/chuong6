@@ -1,0 +1,49 @@
+{% extends 'admin/base_admin.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+<h4 class="mb-3">Tổng quan</h4>
+<div class="row g-3 mb-4">
+  <div class="col"><div class="card"><div class="card-body"><small class="text-muted">Đầu sách</small><div class="fs-3 fw-bold">{{ n_books }}</div></div></div></div>
+  <div class="col"><div class="card"><div class="card-body"><small class="text-muted">Đơn chờ xác nhận</small><div class="fs-3 fw-bold text-warning">{{ n_pending }}</div></div></div></div>
+  <div class="col"><div class="card"><div class="card-body"><small class="text-muted">Doanh thu tháng {{ month }}</small><div class="fs-4 fw-bold text-success">{{ revenue|vnd }}</div></div></div></div>
+  <div class="col"><div class="card"><div class="card-body"><small class="text-muted">Sắp hết hàng</small><div class="fs-3 fw-bold text-danger">{{ n_low }}</div></div></div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <h6>Đơn hàng mới nhất</h6>
+    <table class="table table-sm bg-white align-middle">
+      <thead><tr><th>Mã</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead>
+      {% for o in latest %}
+      <tr><td><a href="{{ url_for('admin.order_detail', id=o.id) }}">#{{ o.id }}</a></td>
+          <td>{{ o.customer_name }}</td><td>{{ o.total|vnd }}</td><td>{{ m.badge(o.status) }}</td></tr>
+      {% endfor %}
+    </table>
+    <a href="{{ url_for('admin.orders') }}">Xem tất cả đơn hàng →</a>
+  </div>
+  <div class="col-lg-5">
+    <div class="card mb-3"><div class="card-body">
+      <h6>Sắp hết hàng (≤ {{ low }})</h6>
+      {% for b in low_books %}
+      <div class="d-flex justify-content-between">
+        <a href="{{ url_for('admin.book_form', id=b.id) }}">{{ b.title }}</a>
+        <b class="{{ 'text-danger' if b.stock == 0 else 'text-warning' }}">{{ b.stock }}</b>
+      </div>
+      {% else %}<small class="text-muted">Không có sách nào sắp hết.</small>{% endfor %}
+    </div></div>
+    <div class="card"><div class="card-body">
+      <h6>Doanh thu 7 ngày</h6>
+      <div class="d-flex align-items-end gap-2" id="chart-box">
+        {% for d, v in chart %}
+        {% set h = (v / top * 90)|round|int %}
+        {% set bar = ('style="height:' ~ h ~ 'px;background:#4f7cf0;border-radius:3px 3px 0 0;min-height:2px"')|safe %}
+        <div class="flex-fill text-center" title="{{ d.strftime('%d/%m') }}: {{ v|vnd }}">
+          <div {{ bar }}></div>
+          <small class="text-muted">{{ d.strftime('%d/%m') }}</small>
+        </div>
+        {% endfor %}
+      </div>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

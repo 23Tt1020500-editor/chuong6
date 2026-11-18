@@ -1,0 +1,7 @@
+﻿venv/
+__pycache__/
+*.pyc
+bookstore.db
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+.vscode/

@@ -1,0 +1,36 @@
+{% extends 'admin/base_admin.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+<h4 class="mb-3">Đơn hàng</h4>
+<ul class="nav nav-pills mb-3">
+  <li class="nav-item"><a class="nav-link {{ 'active' if not status }}" href="{{ url_for('admin.orders', q=kw) }}">Tất cả ({{ total_all }})</a></li>
+  {% for s in statuses %}
+  <li class="nav-item"><a class="nav-link {{ 'active' if status == s }}"
+      href="{{ url_for('admin.orders', status=s, q=kw) }}">{{ s }} ({{ counts.get(s, 0) }})</a></li>
+  {% endfor %}
+</ul>
+<form class="d-flex gap-2 mb-3" method="get">
+  <input type="hidden" name="status" value="{{ status }}">
+  <input class="form-control" name="q" value="{{ kw }}" placeholder="Mã đơn, tên khách hàng, số điện thoại...">
+  <button class="btn btn-primary">Tìm</button>
+</form>
+<table class="table table-hover bg-white align-middle">
+  <thead><tr><th>Mã</th><th>Ngày đặt</th><th>Khách hàng</th><th>Điện thoại</th><th>Tổng tiền</th><th>Trạng thái</th></tr></thead>
+  {% for o in pagination.items %}
+  <tr role="button" data-href="{{ url_for('admin.order_detail', id=o.id) }}">
+    <td><b>#{{ o.id }}</b></td><td>{{ o.created_at|dt('%d/%m/%Y') }}</td>
+    <td>{{ o.customer_name }}</td><td>{{ o.phone }}</td><td>{{ o.total|vnd }}</td><td>{{ m.badge(o.status) }}</td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="text-center text-muted">Không có đơn hàng.</td></tr>{% endfor %}
+</table>
+<div class="d-flex justify-content-between align-items-center">
+  <span>{{ pagination.total }} đơn · tổng giá trị <b class="price">{{ sum_value|vnd }}</b></span>
+  {{ m.pager(pagination, 'admin.orders') }}
+</div>
+
+<script>
+  document.querySelectorAll('tr[data-href]').forEach(function (tr) {
+    tr.addEventListener('click', function () { location.href = tr.dataset.href; });
+  });
+</script>
+{% endblock %}

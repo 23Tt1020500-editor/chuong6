@@ -1,0 +1,50 @@
+{% extends 'admin/base_admin.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+  <h4>Sách ({{ total_books }})</h4>
+  <a class="btn btn-primary" href="{{ url_for('admin.book_form') }}">+ Thêm sách</a>
+</div>
+<form class="row g-2 mb-3" method="get">
+  <div class="col"><input class="form-control" name="q" value="{{ kw }}" placeholder="Tìm tên sách, tác giả..."></div>
+  <div class="col-md-3"><select class="form-select" name="category">
+    <option value="">Mọi danh mục</option>
+    {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if c.id == cat }}>{{ c.name }}</option>{% endfor %}
+  </select></div>
+  <div class="col-md-2"><select class="form-select" name="stock">
+    <option value="">Tồn kho</option>
+    <option value="in" {{ 'selected' if stock == 'in' }}>Còn hàng</option>
+    <option value="low" {{ 'selected' if stock == 'low' }}>Sắp hết (≤ 5)</option>
+    <option value="out" {{ 'selected' if stock == 'out' }}>Hết hàng</option>
+  </select></div>
+  <div class="col-auto"><button class="btn btn-outline-primary">Lọc</button></div>
+</form>
+
+<table class="table bg-white align-middle">
+  <thead><tr><th class="w-auto"></th><th>Tên sách / Tác giả</th><th>Danh mục</th><th>Giá</th><th>Tồn</th><th>Thao tác</th></tr></thead>
+  {% for b in pagination.items %}
+  <tr>
+    <td>{{ m.cover(b, 44) }}</td>
+    <td><a class="fw-semibold text-dark text-decoration-none" href="{{ url_for('admin.book_form', id=b.id) }}">{{ b.title }}</a>
+        <div class="small text-muted">{{ b.author }}</div></td>
+    <td>{{ b.category.name }}</td>
+    <td>{{ b.price|vnd }}</td>
+    <td class="{{ 'text-danger fw-bold' if b.stock == 0 }}">{{ b.stock }}</td>
+    <td>
+      <div class="d-flex gap-2 align-items-center">
+        <a href="{{ url_for('admin.book_form', id=b.id) }}">Sửa</a>
+        <form method="post" action="{{ url_for('admin.book_delete', id=b.id) }}"
+              onsubmit="return confirm('Xoá sách này?')">
+          {{ m.csrf() }}
+          <button class="btn btn-link p-0 text-danger" {{ 'disabled' if b.id in ordered }}>Xoá</button>
+        </form>
+      </div>
+    </td>
+  </tr>
+  {% else %}<tr><td colspan="6" class="text-center text-muted">Không có sách phù hợp.</td></tr>{% endfor %}
+</table>
+<div class="d-flex justify-content-between align-items-center">
+  <small class="text-muted">Hiển thị {{ pagination.items|length }} / {{ pagination.total }} sách</small>
+  {{ m.pager(pagination, 'admin.books') }}
+</div>
+{% endblock %}

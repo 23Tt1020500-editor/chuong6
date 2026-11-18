@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<nav class="small text-muted mb-3">
+  <a href="{{ url_for('shop.books') }}">Sách</a> ›
+  <a href="{{ url_for('shop.books', category=book.category_id) }}">{{ book.category.name }}</a> › {{ book.title }}
+</nav>
+<div class="row g-4">
+  <div class="col-md-4">{{ m.cover(book, 300) }}</div>
+  <div class="col-md-8">
+    <h3>{{ book.title }}</h3>
+    <p class="text-muted mb-1">Tác giả: {{ book.author }}{% if book.publisher %} · {{ book.publisher }}{% endif %}{% if book.year %}, {{ book.year }}{% endif %}</p>
+    <div class="price fs-4">{{ book.price|vnd }}</div>
+    <p class="mb-1">Danh mục: {{ book.category.name }}</p>
+    <p class="{{ 'text-success' if book.stock else 'text-danger' }}">
+      {{ '● Còn %d cuốn'|format(book.stock) if book.stock else '● Hết hàng' }}</p>
+    <p>{{ book.description or '' }}</p>
+
+    <form method="post" action="{{ url_for('shop.cart_add', book_id=book.id) }}">
+      {{ m.csrf() }}
+      <input type="hidden" name="next" value="{{ url_for('shop.book_detail', book_id=book.id) }}">
+      <label class="form-label">Số lượng</label>
+      <div class="input-group mb-1" style="width:170px">
+        <button type="button" class="btn btn-outline-primary" onclick="step(-1)">−</button>
+        <input id="qty" name="qty" type="number" class="form-control text-center"
+               value="1" min="1" max="{{ max_qty }}" {{ 'disabled' if max_qty < 1 }}>
+        <button type="button" class="btn btn-outline-primary" onclick="step(1)">+</button>
+      </div>
+      <small class="text-muted d-block mb-3">tối đa {{ max_qty }} (đã có {{ in_cart }} trong giỏ)</small>
+      <button class="btn btn-primary" {{ 'disabled' if max_qty < 1 }}>🛒 Thêm vào giỏ hàng</button>
+    </form>
+  </div>
+</div>
+<script>
+  function step(d) {
+    const i = document.getElementById('qty');
+    const v = (parseInt(i.value) || 1) + d;
+    i.value = Math.min(Math.max(v, 1), parseInt(i.max) || 1);
+  }
+</script>
+{% endblock %}

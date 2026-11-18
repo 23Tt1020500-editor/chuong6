@@ -1,0 +1,38 @@
+{% extends 'admin/base_admin.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+<h4 class="mb-3">Danh mục sách ({{ rows|length }})</h4>
+<div class="row g-4">
+  <div class="col-md-7">
+    <table class="table bg-white align-middle">
+      <thead><tr><th>Tên danh mục</th><th>Số sách</th><th>Thao tác</th></tr></thead>
+      {% for c, n in rows %}
+      <tr>
+        <td><a href="{{ url_for('admin.books', category=c.id) }}">{{ c.name }}</a></td>
+        <td>{{ n }}</td>
+        <td>
+          <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.categories', id=c.id) }}">Sửa</a>
+            <form method="post" action="{{ url_for('admin.category_delete', id=c.id) }}"
+                  onsubmit="return confirm('Xoá danh mục này?')">{{ m.csrf() }}
+              <button class="btn btn-link p-0 text-danger">Xoá</button></form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="col-md-5">
+    <div class="card"><div class="card-body">
+      <h6>{{ 'Sửa danh mục' if cat else 'Thêm danh mục' }}</h6>
+      <form method="post" action="{{ request.path }}" novalidate>
+        {{ form.hidden_tag() }}
+        {{ m.field(form.name) }}
+        {{ m.field(form.description, rows=3) }}
+        <button class="btn btn-primary w-100">{{ 'Lưu' if cat else '+ Thêm' }}</button>
+        {% if cat %}<a class="btn btn-link w-100" href="{{ url_for('admin.categories') }}">Huỷ</a>{% endif %}
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

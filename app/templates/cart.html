@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+{% if not lines %}
+  <h4>Giỏ hàng trống</h4>
+  <p><a href="{{ url_for('shop.books') }}">← Quay lại danh sách sách</a></p>
+{% else %}
+<h4 class="mb-3">Giỏ hàng ({{ lines|length }} đầu sách)</h4>
+<table class="table bg-white align-middle">
+  <thead><tr><th>Sách</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th><th></th></tr></thead>
+  <tbody>
+  {% for l in lines %}
+  <tr>
+    <td><a class="text-dark text-decoration-none" href="{{ url_for('shop.book_detail', book_id=l.book.id) }}">{{ l.book.title }}</a></td>
+    <td>{{ l.book.price|vnd }}</td>
+    <td>
+      <div class="d-flex align-items-center gap-2">
+        <form method="post" action="{{ url_for('shop.cart_dec', book_id=l.book.id) }}">{{ m.csrf() }}
+          <button class="btn btn-outline-primary btn-sm">−</button></form>
+        <span>{{ l.qty }}</span>
+        <form method="post" action="{{ url_for('shop.cart_inc', book_id=l.book.id) }}">{{ m.csrf() }}
+          <button class="btn btn-outline-primary btn-sm" {{ 'disabled' if l.qty >= l.book.stock }}>+</button></form>
+      </div>
+    </td>
+    <td class="fw-bold">{{ l.total|vnd }}</td>
+    <td>
+      <form method="post" action="{{ url_for('shop.cart_remove', book_id=l.book.id) }}">{{ m.csrf() }}
+        <button class="btn btn-link text-danger btn-sm">✕ Xoá</button></form>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr><td colspan="3" class="text-end">Tổng cộng</td>
+    <td colspan="2" class="price fs-5">{{ total|vnd }}</td></tr></tfoot>
+</table>
+<div class="d-flex gap-2">
+  <a class="btn btn-outline-primary" href="{{ url_for('shop.books') }}">← Tiếp tục mua sách</a>
+  <form method="post" action="{{ url_for('shop.cart_clear') }}"
+        onsubmit="return confirm('Xoá toàn bộ giỏ hàng?')">{{ m.csrf() }}
+    <button class="btn btn-outline-danger">Xoá giỏ hàng</button></form>
+  <a class="btn btn-primary ms-auto" href="{{ url_for('shop.checkout') }}">Đặt hàng →</a>
+</div>
+{% endif %}
+{% endblock %}

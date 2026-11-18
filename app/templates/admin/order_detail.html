@@ -1,0 +1,63 @@
+{% extends 'admin/base_admin.html' %}
+{% import 'macros.html' as m with context %}
+{% block content %}
+<small class="text-muted"><a href="{{ url_for('admin.orders') }}">Đơn hàng</a> › #{{ order.id }}</small>
+<h4 class="mb-3">Đơn hàng #{{ order.id }} · {{ order.created_at|dt }}</h4>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card mb-3"><div class="card-body">
+      <h6>Khách hàng</h6>
+      <div>{{ order.customer_name }} · {{ order.phone }}{% if order.email %} · {{ order.email }}{% endif %}</div>
+      <div>{{ order.address }}</div>
+      <div>Thanh toán: {{ order.payment_method }}</div>
+      {% if order.note %}<small class="text-muted">Ghi chú: {{ order.note }}</small>{% endif %}
+    </div></div>
+    <table class="table bg-white">
+      <thead><tr><th>Sách</th><th>Đơn giá</th><th>SL</th><th class="text-end">Thành tiền</th></tr></thead>
+      {% for it in order.items %}
+      <tr><td>{{ it.book.title }}</td><td>{{ it.unit_price|vnd }}</td><td>{{ it.quantity }}</td>
+          <td class="text-end">{{ (it.unit_price * it.quantity)|vnd }}</td></tr>
+      {% endfor %}
+      <tr><td colspan="3" class="text-end">Phí giao hàng</td>
+          <td class="text-end">{{ 'Miễn phí' if not order.shipping_fee else order.shipping_fee|vnd }}</td></tr>
+      <tr><td colspan="3" class="text-end fw-bold">Tổng cộng</td><td class="text-end price fs-5">{{ order.total|vnd }}</td></tr>
+    </table>
+    <small class="text-muted">Đơn giá là giá tại thời điểm đặt (OrderItem.unit_price).</small>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card mb-3"><div class="card-body">
+      <h6>Trạng thái</h6>
+      <div class="mb-3">{{ m.badge(order.status) }}</div>
+      {% if allowed %}
+        {% if next_options %}
+        <form method="post" action="{{ url_for('admin.order_status', id=order.id) }}" class="mb-2">
+          {{ m.csrf() }}
+          <label class="form-label">Chuyển sang</label>
+          <select class="form-select mb-2" name="status">
+            {% for s in next_options %}<option>{{ s }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-primary w-100">Cập nhật</button>
+        </form>
+        {% endif %}
+        {% if 'Đã huỷ' in allowed %}
+        <form method="post" action="{{ url_for('admin.order_status', id=order.id) }}"
+              onsubmit="return confirm('Huỷ đơn này? Tồn kho sẽ được hoàn lại.')">
+          {{ m.csrf() }}
+          <input type="hidden" name="status" value="Đã huỷ">
+          <button class="btn btn-outline-danger w-100">Huỷ đơn</button>
+        </form>
+        {% endif %}
+      {% else %}
+        <small class="text-muted">Đơn đã kết thúc, không đổi trạng thái được nữa.</small>
+      {% endif %}
+    </div></div>
+    <div class="card"><div class="card-body">
+      <h6>Lịch sử</h6>
+      {% for lg in order.logs %}
+      <div class="small">● {{ lg.changed_at|dt }} · {{ lg.status }}</div>
+      {% endfor %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

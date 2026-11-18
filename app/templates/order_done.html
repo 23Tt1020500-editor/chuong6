@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card border-success"><div class="card-body">
+  <h4 class="text-success">✓ Đặt hàng thành công</h4>
+  <p>Mã đơn: <b>#{{ order.id }}</b> · {{ order.created_at|dt }} · Trạng thái: <b>{{ order.status }}</b></p>
+  <p class="mb-1">Người nhận: {{ order.customer_name }} · {{ order.phone }}</p>
+  <p>Địa chỉ: {{ order.address }} · Thanh toán: {{ order.payment_method }}</p>
+  <table class="table table-sm">
+    {% for it in order.items %}
+    <tr><td>{{ it.book.title }}</td><td>{{ it.unit_price|vnd }} × {{ it.quantity }}</td>
+        <td class="text-end">{{ (it.unit_price * it.quantity)|vnd }}</td></tr>
+    {% endfor %}
+    <tr><td colspan="2">Phí giao hàng</td><td class="text-end">{{ 'Miễn phí' if not order.shipping_fee else order.shipping_fee|vnd }}</td></tr>
+    <tr class="fw-bold"><td colspan="2">Tổng thanh toán</td><td class="text-end price">{{ order.total|vnd }}</td></tr>
+  </table>
+  <a class="btn btn-primary" href="{{ url_for('shop.books') }}">Tiếp tục mua sách</a>
+</div></div>
+{% endblock %}
